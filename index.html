@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pantry Expiry Tracker Pro</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🥦 Pantry Expiry Tracker</h1>
+
+    <!-- Pantry Health Score & Priority Alert -->
+    <div class="health-card">
+      <div class="health-score-container">
+        <span>Pantry Health:</span>
+        <strong id="health-score">100%</strong>
+      </div>
+      <div id="priority-alert" class="priority-alert">
+        ✨ All items are fresh!
+      </div>
+    </div>
+
+    <!-- Summary Dashboard -->
+    <div class="dashboard">
+      <div class="stat-box"><span id="total-count">0</span><small>Total</small></div>
+      <div class="stat-box good"><span id="good-count">0</span><small>Fresh</small></div>
+      <div class="stat-box warning"><span id="warning-count">0</span><small>Expiring</small></div>
+      <div class="stat-box expired"><span id="expired-count">0</span><small>Expired</small></div>
+    </div>
+    
+    <!-- Input Form -->
+    <form id="item-form">
+      <input type="text" id="item-name" placeholder="Item Name (e.g., Milk)" required />
+      <div class="form-row">
+        <input type="number" id="item-qty" placeholder="Qty" min="1" value="1" required />
+        <select id="item-location">
+          <option value="❄️ Fridge">❄️ Fridge</option>
+          <option value="🧊 Freezer">🧊 Freezer</option>
+          <option value="🧺 Pantry">🧺 Pantry</option>
+        </select>
+        <select id="item-category">
+          <option value="Produce">🥬 Produce</option>
+          <option value="Dairy">🥛 Dairy</option>
+          <option value="Bakery">🍞 Bakery</option>
+          <option value="Canned">🥫 Canned</option>
+          <option value="Other">📦 Other</option>
+        </select>
+      </div>
+      <input type="date" id="expiry-date" required />
+      <button type="submit">Add Item</button>
+    </form>
+
+    <!-- Controls (Search, Sort, Filters) -->
+    <div class="controls">
+      <input type="text" id="search-bar" placeholder="🔍 Search items..." oninput="renderItems()" />
+      
+      <div class="form-row">
+        <select id="sort-select" onchange="renderItems()">
+          <option value="date">Sort by Expiry Date</option>
+          <option value="name">Sort by Name (A-Z)</option>
+        </select>
+      </div>
+
+      <div class="filter-container">
+        <button onclick="filterItems('all', event)" class="filter-btn active">All</button>
+        <button onclick="filterItems('expiring', event)" class="filter-btn">Expiring Soon</button>
+        <button onclick="filterItems('expired', event)" class="filter-btn">Expired</button>
+      </div>
+    </div>
+
+    <!-- Item List -->
+    <ul id="item-list"></ul>
+
+    <!-- Backup & Reset Actions -->
+    <div class="data-actions">
+      <button onclick="exportData()" class="data-btn">📥 Export Data</button>
+      <button onclick="document.getElementById('import-file').click()" class="data-btn">📤 Import Data</button>
+      <input type="file" id="import-file" style="display:none;" onchange="importData(event)" accept=".json" />
+    </div>
+    <button id="clear-all-btn" onclick="clearAllItems()">Clear All Items</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
