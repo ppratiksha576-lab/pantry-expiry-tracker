@@ -11,7 +11,12 @@ const itemList = document.getElementById('item-list');
 let items = JSON.parse(localStorage.getItem('pantryItems')) || [];
 let currentFilter = 'all';
 
-// Add new item
+// Request notification permission on startup
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+
+// Add Item
 itemForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -32,13 +37,33 @@ itemForm.addEventListener('submit', (e) => {
   expiryDateInput.value = '';
 });
 
-// Delete single item
+// Barcode Simulation Preset
+function simulateBarcodeScan() {
+  const presets = [
+    { name: "Organic Whole Milk", qty: 1, location: "❄️ Fridge", category: "Dairy", offsetDays: 2 },
+    { name: "Whole Wheat Bread", qty: 1, location: "🧺 Pantry", category: "Bakery", offsetDays: 4 },
+    { name: "Greek Yogurt", qty: 2, location: "❄️ Fridge", category: "Dairy", offsetDays: 1 },
+    { name: "Fresh Spinach", qty: 1, location: "❄️ Fridge", category: "Produce", offsetDays: 3 }
+  ];
+
+  const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + randomPreset.offsetDays);
+
+  itemNameInput.value = randomPreset.name;
+  itemQtyInput.value = randomPreset.qty;
+  itemLocationInput.value = randomPreset.location;
+  itemCategoryInput.value = randomPreset.category;
+  expiryDateInput.value = targetDate.toISOString().split('T')[0];
+}
+
+// Delete Item
 function deleteItem(id) {
   items = items.filter(item => item.id !== id);
   saveAndRender();
 }
 
-// Adjust quantity
+// Adjust Quantity
 function adjustQty(id, delta) {
   items = items.map(item => {
     if (item.id === id) {
@@ -50,7 +75,7 @@ function adjustQty(id, delta) {
   saveAndRender();
 }
 
-// Clear all items
+// Clear All
 function clearAllItems() {
   if (confirm('Are you sure you want to clear all items?')) {
     items = [];
@@ -58,13 +83,25 @@ function clearAllItems() {
   }
 }
 
-// Recipe Search
+// Theme Toggle
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const btn = document.getElementById('theme-toggle');
+  btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+}
+
+// Print Shopping Restock List
+function printShoppingList() {
+  window.print();
+}
+
+// Find Recipes
 function findRecipes(itemName) {
   const query = encodeURIComponent(`recipes with ${itemName}`);
   window.open(`https://www.google.com/search?q=${query}`, '_blank');
 }
 
-// Status calculation
+// Get Status
 function getStatus(expiryDateStr) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -86,7 +123,7 @@ function filterItems(category, event) {
   renderItems();
 }
 
-// Update dashboard + Pantry Health Score + Cook-it-First Alert
+// Update Metrics & Notifications
 function updateMetrics() {
   let good = 0, warning = 0, expired = 0;
   let priorityItem = null;
@@ -98,21 +135,18 @@ function updateMetrics() {
     if (status === 'warning') warning++;
     if (status === 'expired') expired++;
 
-    // Identify item closest to expiring (or already expired)
     if (days < minDays) {
       minDays = days;
       priorityItem = { name: item.name, days: days, status: status };
     }
   });
 
-  // Health Score Calculation
   const total = items.length;
   const score = total > 0 ? Math.round(((good + warning * 0.5) / total) * 100) : 100;
   const healthScoreEl = document.getElementById('health-score');
   healthScoreEl.textContent = `${score}%`;
   healthScoreEl.style.color = score > 75 ? '#2ecc71' : score > 40 ? '#f39c12' : '#e74c3c';
 
-  // Cook-it-First Priority Alert
   const alertEl = document.getElementById('priority-alert');
   if (!priorityItem) {
     alertEl.className = 'priority-alert';
@@ -122,7 +156,7 @@ function updateMetrics() {
     alertEl.textContent = `🚨 Action Needed: ${priorityItem.name} has expired!`;
   } else if (priorityItem.status === 'warning') {
     alertEl.className = 'priority-alert urgent';
-    alertEl.textContent = `⚠️️ Priority: Use ${priorityItem.name} soon (expires in ${priorityItem.days}d)!`;
+    alertEl.textContent = `⚠ Priority: Use ${priorityItem.name} soon (expires in ${priorityItem.days}d)!`;
   } else {
     alertEl.className = 'priority-alert';
     alertEl.textContent = `✨ Everything is fresh! (${priorityItem.name} expires next in ${priorityItem.days}d)`;
@@ -134,42 +168,13 @@ function updateMetrics() {
   document.getElementById('expired-count').textContent = expired;
 }
 
-// Export JSON
-function exportData() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", "pantry_backup.json");
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-}
-
-// Import JSON
-function importData(event) {
-  const fileReader = new FileReader();
-  fileReader.onload = function(e) {
-    try {
-      const importedItems = JSON.parse(e.target.result);
-      if (Array.isArray(importedItems)) {
-        items = importedItems;
-        saveAndRender();
-        alert('Data imported successfully!');
-      }
-    } catch (err) {
-      alert('Invalid JSON file format.');
-    }
-  };
-  fileReader.readAsText(event.target.files[0]);
-}
-
-// Save & render wrapper
+// Save & Render
 function saveAndRender() {
   localStorage.setItem('pantryItems', JSON.stringify(items));
   renderItems();
 }
 
-// Main Render Logic
+// Render Items
 function renderItems() {
   updateMetrics();
   itemList.innerHTML = '';
@@ -223,5 +228,4 @@ function renderItems() {
   });
 }
 
-// Initial render
 renderItems();

@@ -8,7 +8,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>🥦 Pantry Expiry Tracker</h1>
+    <div class="top-bar">
+      <h1>🥦 Pantry Expiry Tracker</h1>
+      <button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </div>
 
     <!-- Pantry Health Score & Priority Alert -->
     <div class="health-card">
@@ -48,7 +51,10 @@
         </select>
       </div>
       <input type="date" id="expiry-date" required />
-      <button type="submit">Add Item</button>
+      <div class="form-row">
+        <button type="submit" style="flex:2;">Add Item</button>
+        <button type="button" class="scan-btn" onclick="simulateBarcodeScan()" style="flex:1;">📷 Quick Scan</button>
+      </div>
     </form>
 
     <!-- Controls (Search, Sort, Filters) -->
@@ -72,10 +78,11 @@
     <!-- Item List -->
     <ul id="item-list"></ul>
 
-    <!-- Backup & Reset Actions -->
+    <!-- Backup & Print Actions -->
     <div class="data-actions">
+      <button onclick="printShoppingList()" class="data-btn">🖨️ Print Restock List</button>
       <button onclick="exportData()" class="data-btn">📥 Export Data</button>
-      <button onclick="document.getElementById('import-file').click()" class="data-btn">📤 Import Data</button>
+      <button onclick="document.getElementById('import-file').click()" class="data-btn">📤 Import</button>
       <input type="file" id="import-file" style="display:none;" onchange="importData(event)" accept=".json" />
     </div>
     <button id="clear-all-btn" onclick="clearAllItems()">Clear All Items</button>
